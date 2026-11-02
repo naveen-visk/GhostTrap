@@ -72,7 +72,7 @@ GhostTrap flips the asymmetric advantage back to the defenders through **Active 
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-username/ghosttrap.git
+git clone https://github.com/naveen-visk/ghosttrap.git
 cd ghosttrap
 
 # 2. Install dependencies (Express + WebSockets)
