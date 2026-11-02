@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostTrap | Autonomous Cyber Deception & Honeynet SOC</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            400: '#fb923c',
+                            500: '#ff6600',
+                            600: '#ea580c',
+                            900: '#7c2d12',
+                        },
+                        cyber: {
+                            950: '#030712',
+                            900: '#0b0f19',
+                            850: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #030712; color: #f3f4f6; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        .pulse-alarm { animation: pulseAlarm 1.2s infinite; }
+        @keyframes pulseAlarm {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.25); }
+        }
+
+        .radar-sweep {
+            position: relative;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, rgba(3, 7, 18, 0.95) 75%);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-cyber-950 text-gray-100 flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-cyber-900/95 backdrop-blur border-b border-cyber-800 sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-500 font-extrabold text-xl shadow-lg shadow-brand-500/10">
+                <i class="fa-solid fa-ghost"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-black text-xl tracking-tight text-white">Ghost<span class="text-brand-500">Trap</span></h1>
+                    <span class="px-2 py-0.5 text-[10px] font-mono font-bold bg-brand-500/15 text-brand-400 border border-brand-500/30 rounded uppercase tracking-wider">Deception SOC</span>
+                </div>
+                <p class="text-[11px] text-gray-400 font-medium">Autonomous Threat Intelligence &amp; Honeynet Engine</p>
+            </div>
+        </div>
+
+        <!-- Controls: Sound Toggle, Bait Link, Reset -->
+        <div class="flex items-center flex-wrap gap-2.5">
+            <!-- Audio Toggle -->
+            <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3 py-1.5 bg-cyber-800 hover:bg-cyber-700 text-gray-300 border border-cyber-700 rounded-lg text-xs font-mono font-medium transition flex items-center gap-2">
+                <i id="soundIcon" class="fa-solid fa-volume-high text-brand-400"></i>
+                <span id="soundLabel">Sound: ON</span>
+            </button>
+
+            <!-- Decoy Trap Link -->
+            <a href="/bait" target="_blank" class="px-3.5 py-1.5 bg-brand-500/15 hover:bg-brand-500/25 text-brand-400 border border-brand-500/40 rounded-lg text-xs font-semibold transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                <span>Open Decoy Trap (/bait)</span>
+            </a>
+
+            <!-- Node Status -->
+            <div class="flex items-center gap-2 bg-cyber-850 px-3 py-1.5 rounded-lg border border-cyber-800 text-xs font-mono">
+                <span id="wsStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="wsStatusText" class="text-emerald-400">WEBSOCKET_LIVE</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- LIVE DEMO ATTACK SIMULATOR (SECRET WEAPON FOR JUDGES) -->
+    <div class="bg-cyber-900 border-b border-cyber-800 px-4 lg:px-8 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 text-brand-400 font-mono font-bold">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>JUDGE DEMO SIMULATOR:</span>
+            </div>
+            <div class="flex items-center flex-wrap gap-2">
+                <button onclick="triggerSimulation('sqli')" class="px-3 py-1 bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30 rounded font-mono transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-red-400"></i> SQL Injection
+                </button>
+                <button onclick="triggerSimulation('bruteforce')" class="px-3 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 rounded font-mono transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-key text-amber-400"></i> Brute Force
+                </button>
+                <button onclick="triggerSimulation('canary')" class="px-3 py-1 bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 rounded font-mono transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-bell text-purple-400"></i> Canary Trip
+                </button>
+                <button onclick="triggerSimulation('traversal')" class="px-3 py-1 bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 rounded font-mono transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-folder-open text-blue-400"></i> Path Traversal
+                </button>
+                <button onclick="triggerSimulation('cmd')" class="px-3 py-1 bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 rounded font-mono transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-terminal text-pink-400"></i> RCE Exploit
+                </button>
+                <button onclick="resetTelemetry()" class="px-2.5 py-1 bg-cyber-800 hover:bg-cyber-700 text-gray-400 border border-cyber-700 rounded font-mono text-[11px] transition ml-1" title="Clear Demo Records">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- METRIC CARDS ROW -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Threat Score Gauge -->
+            <div id="threatScoreCard" class="bg-cyber-900 border border-cyber-800 rounded-xl p-5 flex items-center justify-between transition-all duration-300">
+                <div>
+                    <p class="text-xs text-gray-400 font-medium tracking-wide">Threat Severity Gauge</p>
+                    <h3 id="statScore" class="text-3xl font-extrabold font-mono text-emerald-400 mt-1">18<span class="text-xs font-sans font-normal text-gray-500"> / 100</span></h3>
+                    <p id="threatStatusLabel" class="text-[10px] font-mono text-emerald-400 uppercase mt-0.5 font-bold">STATUS: ELEVATED DEFENSE</p>
+                </div>
+                <div id="threatScoreIconBox" class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+            </div>
+
+            <!-- Total Interceptions -->
+            <div class="bg-cyber-900 border border-cyber-800 rounded-xl p-5 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-gray-400 font-medium tracking-wide">Total Interceptions</p>
+                    <h3 id="statTotal" class="text-3xl font-extrabold font-mono text-white mt-1">0</h3>
+                    <p class="text-[10px] font-mono text-gray-500 mt-0.5">Payloads safely contained</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-xl">
+                    <i class="fa-solid fa-radar"></i>
+                </div>
+            </div>
+
+            <!-- Canary Tripwires -->
+            <div class="bg-cyber-900 border border-cyber-800 rounded-xl p-5 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-gray-400 font-medium tracking-wide">Canary Tripwires</p>
+                    <h3 id="statCanary" class="text-3xl font-extrabold font-mono text-purple-400 mt-1">0</h3>
+                    <p class="text-[10px] font-mono text-gray-500 mt-0.5">Decoy tokens exfiltrated</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xl">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+            </div>
+
+            <!-- Attacker Node Counter & 1-Click Export -->
+            <div class="bg-cyber-900 border border-cyber-800 rounded-xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium tracking-wide">Unique Attacker IPs</p>
+                        <h3 id="statAttackers" class="text-2xl font-extrabold font-mono text-gray-200 mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-lg">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <button onclick="exportForensicReport()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
+                        <i class="fa-solid fa-file-arrow-down"></i> 1-Click Forensic Report
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MAIN GRID: RADAR / MITRE (1 col) + LIVE ATTACK STREAM (2 cols) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- LEFT COLUMN: THREAT RADAR & MITRE ATT&CK MATRIX -->
+            <div class="space-y-6">
+
+                <!-- Cyber Threat Radar Sweep Widget -->
+                <div class="bg-cyber-900 border border-cyber-800 rounded-xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-cyber-800 pb-3">
+                        <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-crosshairs text-emerald-400"></i> Perimeter Threat Radar
+                        </h3>
+                        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/50 border border-emerald-800/40 px-2 py-0.5 rounded">SWEEPING</span>
+                    </div>
+
+                    <div class="relative w-full aspect-square max-w-[240px] mx-auto rounded-full border border-emerald-500/30 radar-sweep flex items-center justify-center overflow-hidden shadow-inner">
+                        <!-- Concentric Radar Rings -->
+                        <div class="absolute inset-4 rounded-full border border-emerald-500/20"></div>
+                        <div class="absolute inset-12 rounded-full border border-emerald-500/20"></div>
+                        <div class="absolute inset-20 rounded-full border border-emerald-500/20"></div>
+                        <div class="absolute w-full h-[1px] bg-emerald-500/30"></div>
+                        <div class="absolute h-full w-[1px] bg-emerald-500/30"></div>
+
+                        <!-- Center Radar Ping -->
+                        <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/80 z-10 animate-ping"></div>
+
+                        <!-- Simulated Radar Blips -->
+                        <div id="radarBlip1" class="absolute top-10 right-12 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse hidden"></div>
+                        <div id="radarBlip2" class="absolute bottom-12 left-10 w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse hidden"></div>
+                        <div id="radarBlip3" class="absolute top-16 left-14 w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse hidden"></div>
+                    </div>
+
+                    <div class="font-mono text-[11px] text-gray-400 space-y-1.5 pt-1">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Active Decoy Traps:</span>
+                            <span class="text-emerald-400 font-bold">4 Services Armed</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Defense Mode:</span>
+                            <span class="text-brand-400 font-bold">Mirage Vault Deception</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MITRE ATT&CK Enterprise Matrix Mapping -->
+                <div class="bg-cyber-900 border border-cyber-800 rounded-xl p-5 space-y-3.5">
+                    <div class="flex items-center justify-between border-b border-cyber-800 pb-3">
+                        <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-brand-400"></i> MITRE ATT&CK Mapping
+                        </h3>
+                        <span class="text-[10px] font-mono text-gray-400">FRAMEWORK v14</span>
+                    </div>
+
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-red-400 font-bold">T1190</span>
+                                <span class="text-gray-300 ml-1.5 text-[11px]">Exploit Public App</span>
+                            </div>
+                            <span id="badgeT1190" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded">0 Hits</span>
+                        </div>
+
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-amber-400 font-bold">T1110</span>
+                                <span class="text-gray-300 ml-1.5 text-[11px]">Brute Force Access</span>
+                            </div>
+                            <span id="badgeT1110" class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded">0 Hits</span>
+                        </div>
+
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-purple-400 font-bold">T1552</span>
+                                <span class="text-gray-300 ml-1.5 text-[11px]">Canary Credential Exfil</span>
+                            </div>
+                            <span id="badgeT1552" class="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/30 px-1.5 py-0.5 rounded">0 Hits</span>
+                        </div>
+
+                        <div class="bg-cyber-950 p-2.5 rounded-lg border border-cyber-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-blue-400 font-bold">T1083</span>
+                                <span class="text-gray-300 ml-1.5 text-[11px]">Directory Traversal</span>
+                            </div>
+                            <span id="badgeT1083" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded">0 Hits</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: REAL-TIME INCIDENT STREAM (2 COLS) -->
+            <div class="lg:col-span-2 bg-cyber-900 border border-cyber-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                
+                <div class="flex flex-wrap items-center justify-between border-b border-cyber-800 pb-3 gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                        <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wider">
+                            Autonomous Threat Interception Stream
+                        </h3>
+                    </div>
+                    <span class="text-xs font-mono text-gray-400">Click any row for forensics</span>
+                </div>
+
+                <!-- Incident Stream Table -->
+                <div class="overflow-x-auto flex-1 min-h-[360px] max-h-[520px] overflow-y-auto">
+                    <table class="w-full text-left font-mono text-xs">
+                        <thead>
+                            <tr class="text-gray-400 border-b border-cyber-800 bg-cyber-950/60 sticky top-0 backdrop-blur">
+                                <th class="py-2.5 px-3">Time</th>
+                                <th class="py-2.5 px-3">Vector</th>
+                                <th class="py-2.5 px-3">Attacker IP</th>
+                                <th class="py-2.5 px-3">Payload Sample</th>
+                                <th class="py-2.5 px-3 text-right">Severity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidentLogBody" class="divide-y divide-cyber-800/80 text-gray-300">
+                            <tr id="emptyRowPlaceholder">
+                                <td colspan="5" class="py-16 text-center text-gray-500">
+                                    <div class="text-2xl mb-2"><i class="fa-solid fa-shield-virus text-gray-600"></i></div>
+                                    Honeynet traps active. No security intrusions detected yet.<br>
+                                    <span class="text-brand-400 font-mono text-[11px]">Click a simulator button above or open /bait in another device to test!</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Status footer -->
+                <div class="border-t border-cyber-800 pt-3 flex flex-wrap items-center justify-between text-[11px] font-mono text-gray-500 gap-2">
+                    <div>Mirage Sandbox Engine: <span class="text-emerald-400">Dynamic Synthetic Payloads Active</span></div>
+                    <div>Agentless Passive Telemetry • Zero Host Overhead</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FORENSIC INSPECTION MODAL -->
+    <div id="forensicModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-cyber-900 border border-cyber-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 animate-scaleIn">
+            <div class="flex items-center justify-between border-b border-cyber-800 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div id="modalSeverityDot" class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <h3 class="font-bold text-sm uppercase tracking-wide text-white" id="modalTitle">Incident Forensics</h3>
+                </div>
+                <button onclick="closeForensicModal()" class="text-gray-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                <div class="bg-cyber-950 p-3 rounded-lg border border-cyber-800">
+                    <span class="text-gray-500 text-[10px] block uppercase">Attacker IP Node</span>
+                    <span id="modalIP" class="text-brand-400 font-bold">127.0.0.1</span>
+                </div>
+                <div class="bg-cyber-950 p-3 rounded-lg border border-cyber-800">
+                    <span class="text-gray-500 text-[10px] block uppercase">MITRE ATT&CK Tactic</span>
+                    <span id="modalMitre" class="text-red-400 font-bold">T1190</span>
+                </div>
+            </div>
+
+            <div class="space-y-1.5 font-mono text-xs">
+                <span class="text-gray-400 text-[11px] block uppercase">Captured Attacker Payload</span>
+                <div id="modalPayload" class="bg-cyber-950 p-3 rounded-lg border border-cyber-800 text-red-300 break-all max-h-28 overflow-y-auto"></div>
+            </div>
+
+            <div class="space-y-1.5 font-mono text-xs">
+                <span class="text-gray-400 text-[11px] block uppercase">Synthetic Deception Output Served (Mirage Vault)</span>
+                <div id="modalResponse" class="bg-cyber-950 p-3 rounded-lg border border-emerald-900/40 text-emerald-300 break-all max-h-32 overflow-y-auto text-[11px]"></div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="closeForensicModal()" class="px-4 py-2 bg-cyber-800 hover:bg-cyber-700 text-gray-200 text-xs font-semibold rounded-lg transition">
+                    Close Forensics
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-cyber-900 border-t border-cyber-800 py-3.5 px-6 text-center text-xs font-mono text-gray-500 flex flex-wrap items-center justify-between gap-4">
+        <div>GhostTrap Deception Framework &copy; 2026 | Built for National Hackathon</div>
+        <div class="flex items-center gap-4">
+            <span class="text-emerald-400"><i class="fa-solid fa-shield"></i> Active Honeynet</span>
+            <span class="text-brand-400 font-bold">Team Chai &amp; Commits</span>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPT: WEBSOCKETS, AUDIO SYNTHESIZER, TELEMETRY -->
+    <script>
+        // Internal State
+        const state = {
+            total: 0,
+            score: 18,
+            canary: 0,
+            attackers: 0,
+            soundEnabled: true,
+            incidents: [],
+            mitreHits: {
+                T1190: 0,
+                T1110: 0,
+                T1552: 0,
+                T1083: 0
+            }
+        };
+
+        // Web Audio Synthesizer (Zero MP3 files needed! Clean tactical sound)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playTacticalAlarm(isCritical = false) {
+            if (!state.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = isCritical ? 'sawtooth' : 'sine';
+                osc.frequency.setValueAtTime(isCritical ? 880 : 587, audioCtx.currentTime); // High pitch alert
+                osc.frequency.exponentialRampToValueAtTime(isCritical ? 440 : 880, audioCtx.currentTime + 0.15);
+
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.22);
+            } catch (e) {
+                console.warn('Audio not allowed yet by user interaction.');
+            }
+        }
+
+        function toggleAudio() {
+            state.soundEnabled = !state.soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            const label = document.getElementById('soundLabel');
+
+            if (state.soundEnabled) {
+                icon.className = "fa-solid fa-volume-high text-brand-400";
+                label.innerText = "Sound: ON";
+                playTacticalAlarm(false);
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-gray-500";
+                label.innerText = "Sound: OFF";
+            }
+        }
+
+        // =========================================================
+        // WEBSOCKET CLIENT (CONNECTS TO SERVER.JS)
+        // =========================================================
+        let ws;
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('Connected to GhostTrap Live WebSocket 🛡️');
+                document.getElementById('wsStatusDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                document.getElementById('wsStatusText').innerText = "WEBSOCKET_LIVE";
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'INITIAL_STATE') {
+                        updateStats(message.stats);
+                        if (message.incidents && message.incidents.length > 0) {
+                            message.incidents.reverse().forEach(inc => renderIncidentRow(inc, false));
+                        }
+                    } else if (message.type === 'SECURITY_ALERT') {
+                        handleIncomingAlert(message.data, message.stats);
+                    }
+                } catch (err) {
+                    console.error('Error parsing WS message:', err);
+                }
+            };
+
+            ws.onclose = () => {
+                document.getElementById('wsStatusDot').className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping";
+                document.getElementById('wsStatusText').innerText = "RECONNECTING...";
+                setTimeout(connectWebSocket, 2000);
+            };
+        }
+
+        // Handle Live Alert
+        function handleIncomingAlert(incident, stats) {
+            if (stats) updateStats(stats);
+            renderIncidentRow(incident, true);
+            playTacticalAlarm(incident.severity === 'CRITICAL');
+            flashRadarBlip();
+
+            // Track MITRE Tactic
+            if (incident.mitreId) {
+                if (incident.mitreId.includes('T1190')) state.mitreHits.T1190++;
+                if (incident.mitreId.includes('T1110')) state.mitreHits.T1110++;
+                if (incident.mitreId.includes('T1552')) state.mitreHits.T1552++;
+                if (incident.mitreId.includes('T1083')) state.mitreHits.T1083++;
+                updateMitreBadges();
+            }
+        }
+
+        // Update Stats Counters
+        function updateStats(stats) {
+            state.total = stats.totalInterceptions;
+            state.score = stats.threatScore;
+            state.canary = stats.canaryTrips;
+            state.attackers = stats.uniqueAttackers;
+
+            document.getElementById('statTotal').innerText = state.total;
+            document.getElementById('statCanary').innerText = state.canary;
+            document.getElementById('statAttackers').innerText = state.attackers;
+
+            const scoreEl = document.getElementById('statScore');
+            const scoreCard = document.getElementById('threatScoreCard');
+            const statusLabel = document.getElementById('threatStatusLabel');
+            const iconBox = document.getElementById('threatScoreIconBox');
+
+            scoreEl.innerHTML = `${state.score}<span class="text-xs font-sans font-normal text-gray-500"> / 100</span>`;
+
+            if (state.score >= 85) {
+                scoreEl.className = "text-3xl font-extrabold font-mono text-red-500 mt-1";
+                statusLabel.innerText = "STATUS: CRITICAL ATTACK THREAT";
+                statusLabel.className = "text-[10px] font-mono text-red-500 uppercase mt-0.5 font-bold";
+                iconBox.className = "w-12 h-12 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center justify-center text-red-400 text-xl pulse-alarm";
+            } else if (state.score >= 50) {
+                scoreEl.className = "text-3xl font-extrabold font-mono text-amber-400 mt-1";
+                statusLabel.innerText = "STATUS: ACTIVE INTRUSION PROBING";
+                statusLabel.className = "text-[10px] font-mono text-amber-400 uppercase mt-0.5 font-bold";
+                iconBox.className = "w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xl";
+            } else {
+                scoreEl.className = "text-3xl font-extrabold font-mono text-emerald-400 mt-1";
+                statusLabel.innerText = "STATUS: ELEVATED DEFENSE";
+                statusLabel.className = "text-[10px] font-mono text-emerald-400 uppercase mt-0.5 font-bold";
+                iconBox.className = "w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl";
+            }
+        }
+
+        // Render Row in Table
+        function renderIncidentRow(incident, isNew = true) {
+            const tbody = document.getElementById('incidentLogBody');
+            const emptyPlaceholder = document.getElementById('emptyRowPlaceholder');
+            if (emptyPlaceholder) emptyPlaceholder.remove();
+
+            state.incidents.unshift(incident);
+
+            const tr = document.createElement('tr');
+            tr.className = `cursor-pointer hover:bg-cyber-800 transition ${isNew ? 'bg-red-500/10' : ''}`;
+            tr.onclick = () => openForensicModal(incident);
+
+            const sevBadge = incident.severity === 'CRITICAL' 
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/40">CRITICAL</span>'
+                : incident.severity === 'HIGH'
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40">HIGH</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40">MEDIUM</span>';
+
+            tr.innerHTML = `
+                <td class="py-2.5 px-3 text-gray-400 text-[11px]">${incident.timestamp}</td>
+                <td class="py-2.5 px-3 font-bold text-brand-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-virus text-[11px]"></i>
+                    <span>${incident.vector}</span>
+                </td>
+                <td class="py-2.5 px-3 text-gray-300 text-[11px]">${incident.clientIP}</td>
+                <td class="py-2.5 px-3 text-gray-400 text-[11px] max-w-[220px] truncate">${escapeHTML(incident.payload)}</td>
+                <td class="py-2.5 px-3 text-right">${sevBadge}</td>
+            `;
+
+            tbody.insertBefore(tr, tbody.firstChild);
+
+            if (isNew) {
+                setTimeout(() => tr.classList.remove('bg-red-500/10'), 2500);
+            }
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Radar Blip Animation
+        function flashRadarBlip() {
+            const blips = ['radarBlip1', 'radarBlip2', 'radarBlip3'];
+            const randomBlip = document.getElementById(blips[Math.floor(Math.random() * blips.length)]);
+            if (randomBlip) {
+                randomBlip.classList.remove('hidden');
+                setTimeout(() => randomBlip.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Update MITRE badges
+        function updateMitreBadges() {
+            document.getElementById('badgeT1190').innerText = `${state.mitreHits.T1190} Hits`;
+            document.getElementById('badgeT1110').innerText = `${state.mitreHits.T1110} Hits`;
+            document.getElementById('badgeT1552').innerText = `${state.mitreHits.T1552} Hits`;
+            document.getElementById('badgeT1083').innerText = `${state.mitreHits.T1083} Hits`;
+        }
+
+        // Forensic Modal Handling
+        function openForensicModal(incident) {
+            document.getElementById('modalTitle').innerText = `${incident.vector} - Forensics`;
+            document.getElementById('modalIP').innerText = incident.clientIP;
+            document.getElementById('modalMitre').innerText = incident.mitreId || 'T1190';
+            document.getElementById('modalPayload').innerText = incident.payload;
+            document.getElementById('modalResponse').innerText = incident.fakeResponseServed || 'Dynamic deception payload delivered.';
+
+            const dot = document.getElementById('modalSeverityDot');
+            dot.className = incident.severity === 'CRITICAL' ? 'w-3 h-3 rounded-full bg-red-500' : 'w-3 h-3 rounded-full bg-amber-400';
+
+            document.getElementById('forensicModal').classList.remove('hidden');
+        }
+
+        function closeForensicModal() {
+            document.getElementById('forensicModal').classList.add('hidden');
+        }
+
+        // 1-Click Attack Simulator Trigger
+        async function triggerSimulation(type) {
+            try {
+                await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type })
+                });
+            } catch (e) {
+                console.error('Simulator trigger error:', e);
+            }
+        }
+
+        // Reset Telemetry for Fresh Demo
+        async function resetTelemetry() {
+            if (!confirm('Reset all demo telemetry for a fresh demonstration?')) return;
+            try {
+                await fetch('/api/telemetry/reset', { method: 'POST' });
+                location.reload();
+            } catch (e) {
+                console.error('Reset error:', e);
+            }
+        }
+
+        // 1-Click Forensic Report Export
+        function exportForensicReport() {
+            window.location.href = '/api/telemetry/export';
+        }
+
+        // On Load Init
+        window.onload = () => {
+            connectWebSocket();
+        };
+    </script>
+</body>
+</html>
