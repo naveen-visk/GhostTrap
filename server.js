@@ -199,6 +199,14 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'bait.html'));
 });
 
+// Presentation Pitch Deck Shortcut
+app.get('/ppt', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'presentation.html'));
+});
+app.get('/presentation', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'presentation.html'));
+});
+
 // Trap 2: Fake Authentication Endpoint (Catches Brute-Force Logins)
 app.post('/api/v1/auth/login', (req, res) => {
     const { username, password } = req.body || {};
