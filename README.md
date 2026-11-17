@@ -1,138 +1,202 @@
-# 🛡️ GhostTrap: Autonomous Cyber Deception & Honeynet SOC Engine
+👻 GhostTrap – Active Cyber Deception & Honeypot
 
-[![Node.js Version](https://img.shields.io/badge/Node.js-v24.x-green.svg)](https://nodejs.org/)
-[![Architecture](https://img.shields.io/badge/Architecture-Active%20Deception-orange.svg)]()
-[![Defense](https://img.shields.io/badge/Framework-MITRE%20ATT%26CK-red.svg)](https://attack.mitre.org/)
-[![Team](https://img.shields.io/badge/Team-Chai%20%26%20Commits-blue.svg)]()
-[![Status](https://img.shields.io/badge/Status-Hackathon%20Production%20Ready-emerald.svg)]()
+Don't Just Block Attackers. Trap, Deceive, Fingerprint, and Track Them.
 
-> **GhostTrap** is an intelligent, agentless cyber deception and adaptive honeypot framework that transforms enterprise security from passive defense into proactive threat entrapment. Instead of just blocking malicious actors, GhostTrap lulls attackers into a **"Mirage Vault"**—a realistic decoy environment where dynamic synthetic payloads, fake credentials, and Canary tokens are served while capturing every keystroke and telemetry signal in real-time.
+GhostTrap is an active cyber deception and honeypot project designed to detect suspicious activity, redirect potential attackers into a simulated environment, and collect useful security telemetry for defensive analysis.
+
+Instead of simply blocking suspicious requests with traditional 403 errors, GhostTrap demonstrates how deception techniques can be used to study attacker behaviour in a controlled environment.
 
 ---
 
-## 🎯 The Core Problem
+🚨 Problem Statement
 
-Traditional cybersecurity defenses (Firewalls, WAFs) suffer from three fatal flaws:
-1. **Zero-Day Blindness**: Signatures fail against unknown or novel attack vectors.
-2. **Alert Fatigue**: SOC analysts drown in thousands of false positives daily.
-3. **Information Asymmetry**: Attackers only need to find one flaw to succeed, while defenders must secure everything.
+Traditional Web Application Firewalls (WAFs) often block suspicious requests immediately. This may alert attackers and encourage them to modify their techniques.
 
----
+Common automated attacks target exposed routes such as:
 
-## 💡 The GhostTrap Solution
+- "/admin"
+- "/login"
+- "/.env"
 
-GhostTrap flips the asymmetric advantage back to the defenders through **Active Deception Technology**:
+Small startups and open-source projects may not have access to expensive enterprise Security Operations Center (SOC) solutions.
 
-```
-                       [ Incoming Threat / Attacker ]
-                                     |
-                                     v
-                       [ GhostTrap Deception Proxy ]
-                        /                         \
-         (Benign Traffic)                         (Malicious Payload)
-                |                                          |
-                v                                          v
-      [ Normal App Routes ]                     [ Mirage Sandbox Vault ]
-                                                • Synthetic SQL Database Dump
-                                                • Decoy AWS Secrets (.env)
-                                                • Fake Admin SSO Session
-                                                           |
-                                                           v
-                                            [ Real-Time SOC Telemetry ]
-                                            • Instant Audio Siren & Radar Blip
-                                            • MITRE ATT&CK Matrix Tagging
-                                            • 1-Click Forensic JSON Export
-```
-
-### 🌟 Key Innovations
-1. **The Mirage Vault (Dynamic Synthetic Deception)**:
-   - When an attacker executes SQL Injection (`' OR '1'='1'`), GhostTrap generates realistic fake user records containing honeypot credentials. The attacker believes they have breached the database and wastes critical time exfiltrating useless decoy data.
-2. **Cryptographic Canary Tripwires**:
-   - Decoy configuration files (`aws_secret_keys.env`, `staff_credentials.csv`) are embedded with unique tracking beacons (`#CNRY-8821`). The moment an attacker attempts to use or query the fake token, a **CRITICAL** alarm is fired.
-3. **Agentless Passive Fingerprinting**:
-   - Captures client IP, browser signatures, request methods, and exact payloads with **zero host overhead**.
-4. **Military-Grade Defender SOC Console**:
-   - Real-time WebSocket event streaming.
-   - Dynamic Threat Severity Scoring (0–100).
-   - Enterprise MITRE ATT&CK mapping (`T1190`, `T1110`, `T1552`, `T1083`).
-   - Web Audio tactical alerts.
-   - 1-Click Forensic JSON / PDF incident reporting.
-5. **Interactive Attack Simulator**:
-   - Built-in simulation trigger bar to effortlessly demonstrate attacks live in front of hackathon judges without needing complex attack infrastructure.
+GhostTrap aims to demonstrate an affordable and lightweight alternative using active deception techniques.
 
 ---
 
-## 🚀 Live Demo & Presentation Walkthrough
+💡 Our Solution
 
-### 1. Prerequisites
-- **Node.js**: `v18.0.0` or higher (Tested on Node.js `v24.22.0`)
-- **Git**
+GhostTrap introduces an Active Deception & Smart Honeypot Sandbox.
 
-### 2. Quickstart Installation
+It provides a simulated environment where suspicious interactions can be observed and analysed without exposing actual administrative data.
 
-```bash
-# 1. Clone repository
-git clone https://github.com/naveen-visk/ghosttrap.git
-cd ghosttrap
+The system focuses on three major concepts:
 
-# 2. Install dependencies (Express + WebSockets)
-npm install
-
-# 3. Start the GhostTrap Deception Engine
-npm start
-```
-
-### 3. Accessing the Interfaces
-- **Defender SOC Console**: [http://localhost:3000](http://localhost:3000)
-- **Attacker Decoy Trap**: [http://localhost:3000/bait](http://localhost:3000/bait)
+1. Active Deception: Redirecting suspicious interactions into a simulated Mirage Admin Vault.
+2. Security Telemetry: Collecting browser and interaction-related information for defensive analysis.
+3. Canary Beacon Trap: Using decoy files and tracking identifiers to demonstrate suspicious access detection.
 
 ---
 
-## 🧪 Testing Attacks (2-Laptop Hackathon Setup)
+✨ Key Features
 
-### Option A: From Laptop 2 or Judge's Smartphone
-1. Connect both devices to the same Wi-Fi or mobile hotspot.
-2. Find Laptop 1's IP address (`ipconfig` on Windows, e.g., `192.168.1.5`).
-3. Open `http://<laptop-1-ip>:3000/bait` on Laptop 2 or the judge's phone.
-4. Try typing `' OR '1'='1'` into the database search box or click "Exfiltrate".
-5. Observe the instant red alert and audio chime on Laptop 1!
+1. Multi-Vector Heuristic Classifier
 
-### Option B: Automated Attack Script (`attack_sim.bat`)
-Run the included batch script on Laptop 2:
-```cmd
-attack_sim.bat
-```
-Select `[6]` to launch a multi-vector attack wave across SQLi, Brute-Force, Directory Traversal, and Canary Exfiltration.
+- Regex-based detection logic.
+- Demonstration of SQL Injection patterns.
+- XSS pattern detection.
+- Path Traversal pattern detection.
+- Brute-force input detection.
 
-### Option C: Built-in Judge Demo Simulator Bar
-On the Defender SOC Console (`http://localhost:3000`), click any button on the top toolbar:
-- `[🚨 SQL Injection]`
-- `[🔑 Brute Force]`
-- `[🪤 Canary Trip]`
-- `[📂 Path Traversal]`
-- `[⚡ RCE Exploit]`
+2. Live SOC Command Dashboard
 
----
+- Defender-focused monitoring interface.
+- Threat score visualization (0–100).
+- Security event logs.
+- One-click JSON forensic report export.
 
-## 📊 MITRE ATT&CK Matrix Coverage
+3. Mirage Admin Vault
 
-| Technique ID | Name | GhostTrap Detection & Containment |
-| :--- | :--- | :--- |
-| **T1190** | Exploit Public-Facing Application | Catches SQLi & Command Injection patterns; returns fake database tables |
-| **T1110** | Brute Force Authentication | Intercepts dictionary attacks on `/api/v1/auth/login`; returns decoy session tokens |
-| **T1552** | Unsecured Credentials | Tracks unauthorized queries for Canary AWS/Stripe keys via `/canary/:token` |
-| **T1083** | File & Directory Discovery | Intercepts path traversal probes (`/.env`, `/etc/passwd`, `wp-admin`) |
+- Simulated administrative environment.
+- Decoy data for controlled demonstrations.
+- Observation of suspicious interactions.
 
----
+4. Browser Fingerprinting & Telemetry
 
-## 👥 Team: Chai & Commits
+Uses browser APIs such as:
 
-- **Member 1**: Backend & Systems Architecture Lead (Node.js, WebSocket Streaming, Deception Core)
-- **Member 2**: Frontend & Cyber SOC Lead (Glassmorphism UI, Radar Visuals, Audio Synthesizer)
-- **Member 3**: Attack Simulation & GitHub DevOps (Payload Scripting, Canary Token Design, Documentation)
-- **Member 4**: Threat Intelligence & Pitch Presentation (Canva Deck, Elevator Pitch, Judge Q&A Defense)
+- Navigator API
+- Intl API
+- Browser and operating-system information
+- Screen resolution information
+
+The collected information is intended for defensive analysis and demonstration purposes.
+
+5. Canary Beacon Trap
+
+- Decoy CSV file concept.
+- Canary identifiers such as "#CNRY-8821".
+- Demonstration of suspicious decoy-file access events.
 
 ---
 
-## ⚖️ Ethical & Educational Disclaimer
-*GhostTrap is developed strictly for research, educational, and authorized cyber defense purposes as part of a competitive hackathon submission. Decoy techniques must always be deployed in compliance with local cybersecurity and network regulations.*
+🛠️ Technology Stack
+
+Component| Technology
+Frontend| HTML
+Styling| Tailwind CSS
+Detection Engine| JavaScript ES6+
+Detection Logic| Regex Heuristics
+Browser Telemetry| Navigator & Intl APIs
+State Management| Local Storage
+Forensic Reports| JSON Exporter
+
+---
+
+🏗️ System Architecture
+
+GhostTrap follows a lightweight client-side prototype architecture.
+
+Detection Layer
+
+- Analyses suspicious input patterns.
+- Applies heuristic-based detection.
+
+Deception Layer
+
+- Provides a simulated Mirage Admin Vault.
+- Demonstrates decoy interactions.
+
+Telemetry Layer
+
+- Collects available browser-related information.
+- Records demonstration events.
+
+Dashboard Layer
+
+- Displays threat scores and event logs.
+- Supports JSON forensic report export.
+
+---
+
+🎯 Target Audience
+
+- Open-source maintainers.
+- Startups and small development teams.
+- Cybersecurity educators.
+- CTF trainers.
+- Security researchers and students.
+
+---
+
+📊 Expected Impact
+
+GhostTrap demonstrates how active deception can help defenders:
+
+- Study suspicious interactions.
+- Understand common attack patterns.
+- Collect useful security telemetry.
+- Analyse decoy access events.
+- Explore affordable defensive security solutions.
+
+---
+
+🚀 Project Roadmap
+
+Phase 1 – Prototype (Current)
+
+- Dual-view sandbox interface.
+- Regex-based detection engine.
+- Browser fingerprinting demonstration.
+- One-click JSON forensic export.
+
+Phase 2 – Beta Development
+
+- Gemini LLM integration for dynamic simulated SQL outputs.
+- Automated Discord and Telegram canary alerts.
+- Improved telemetry and event analysis.
+
+Phase 3 – Scalability
+
+- Lightweight Express.js middleware.
+- Simplified integration with existing applications.
+- Improved deployment and monitoring capabilities.
+
+Roadmap features are planned enhancements and should not be considered part of the current prototype.
+
+---
+
+🔒 Security & Ethical Considerations
+
+GhostTrap is designed as a defensive cybersecurity demonstration.
+
+- Uses a simulated environment for deception.
+- Does not require real attacker interaction for its demonstrations.
+- Uses decoy data rather than actual sensitive credentials.
+- Browser telemetry is intended for security analysis.
+- Future integrations will follow appropriate privacy and security practices.
+
+Note: The current prototype demonstrates client-side detection and simulated honeypot functionality. It is not a replacement for a production WAF, backend security monitoring system, or enterprise SOC platform.
+
+---
+
+👨‍💻 Team – Chai & Commits
+
+Developed for 13th Protocol: An AI Hackathon 2026.
+
+- Amit
+- Naveen
+- Krati
+- Haider
+
+Voyager Coding Club, KCC ITM
+
+---
+
+🌟 Our Vision
+
+Our vision is to shift cybersecurity from passive defence towards intelligent deception.
+
+Don't Just Block Attackers. Trap, Deceive, Fingerprint, and Track Them.
+
+Built for Defender Intelligence.
